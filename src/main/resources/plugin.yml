@@ -4,6 +4,6 @@ main: org.nicolie.towersbot.TowersBot
 commands:
   TowersBot:
     description: Comandos para gestionar TowersBot.
-    usage: /<command> reload
+    usage: /<command> <reload|list|delete|add|update|help>
     permission: towers.admin
     permission-message: No tienes permiso para usar este comando.

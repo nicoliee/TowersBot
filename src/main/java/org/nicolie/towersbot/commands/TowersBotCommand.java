@@ -4,7 +4,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.nicolie.towersbot.TowersBot;
+import org.nicolie.towersbot.update.AutoUpdate;
 
 public class TowersBotCommand implements CommandExecutor {
     private final TowersBot plugin;
@@ -16,14 +18,14 @@ public class TowersBotCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         // Verificar permisos al inicio
-        if (!sender.hasPermission("towers.admin")) {
+        if (!sender.hasPermission("towers.admin") && !sender.isOp()) {
             sender.sendMessage("§cNo tienes permiso para usar este comando.");
             return true;
         }
 
         // Verificar que se pasen argumentos
         if (args.length == 0) {
-            sender.sendMessage("§cUso: /TowersBot <lista|delete|add|reload>");
+            sender.sendMessage("§aLa versión actual de TowersBot es: §b" + plugin.getDescription().getVersion());
             return true;
         }
 
@@ -43,7 +45,7 @@ public class TowersBotCommand implements CommandExecutor {
                 }
                 return true;
 
-            case "lista":
+            case "list":
                 String tablas = config.getString("DB_TABLES", "");
                 if (tablas.isEmpty()) {
                     sender.sendMessage("§eNo hay tablas configuradas en DB_TABLES.");
@@ -120,16 +122,27 @@ public class TowersBotCommand implements CommandExecutor {
                 sender.sendMessage("§aTabla añadida: " + nuevaTabla);
                 return true;
 
+            case "update":
+                String currentVersion = plugin.getDescription().getVersion();
+                sender.sendMessage("§aLa versión actual de TowersBot es: §b" + currentVersion);
+
+                // Iniciar la verificación de actualizaciones
+                AutoUpdate updateChecker = new AutoUpdate((JavaPlugin) plugin);
+                updateChecker.checkForUpdates();
+
+                return true;
+
             case "help":
                 sender.sendMessage("§aComandos disponibles:");
                 sender.sendMessage("§e/TowersBot lista §7- Muestra las tablas configuradas.");
                 sender.sendMessage("§e/TowersBot delete {numero} §7- Elimina una tabla de la configuración.");
                 sender.sendMessage("§e/TowersBot add {tabla} §7- Añade una tabla a la configuración.");
                 sender.sendMessage("§e/TowersBot reload §7- Recarga la configuración del plugin.");
+                sender.sendMessage("§e/TowersBot update §7- Verifica actualizaciones del plugin.");
                 return true;
-                
+
             default:
-                sender.sendMessage("§cComando desconocido. Uso: /TowersBot <lista|delete|add|reload>");
+                sender.sendMessage("§cComando desconocido. Uso: /TowersBot <lista|delete|add|reload|update>");
                 return true;
         }
     }
