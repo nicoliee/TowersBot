@@ -19,7 +19,7 @@ public class AutoUpdate {
 
     public void checkForUpdates() {
         String currentVersion = plugin.getDescription().getVersion();
-        String apiUrl = "https://github.com/nicoliee/TowersBot/releases/latest";
+        String apiUrl = "https://api.github.com/repos/nicoliee/TowersBot/releases/latest";
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
