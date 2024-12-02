@@ -1,0 +1,9 @@
+name: TowersBot
+version: '${project.version}'
+main: org.nicolie.towersbot.TowersBot
+commands:
+  TowersBot:
+    description: Comandos para gestionar TowersBot.
+    usage: /<command> reload
+    permission: towers.admin
+    permission-message: No tienes permiso para usar este comando.
