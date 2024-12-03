@@ -8,6 +8,7 @@ import org.nicolie.towersbot.stats.PlayerStats;
 import org.jetbrains.annotations.Nullable;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SQLDatabaseConnection {
     private Connection connection;
@@ -26,7 +27,7 @@ public class SQLDatabaseConnection {
         this.user = user;
         this.password = password;
         this.tables = new ArrayList<>();
-        this.tables.addAll(Arrays.stream(tables.split(",")).toList());
+        this.tables.addAll(Arrays.stream(tables.split(",")).collect(Collectors.toList()));
     }
 
     public boolean Conectar() {
@@ -75,18 +76,25 @@ public class SQLDatabaseConnection {
     }
 
     public boolean hasAccount(String playerName, String table) {
-        return (boolean) Objects.requireNonNullElse(operation(OperationType.HAS_ACC, playerName, table, false), false);
+        Object result = operation(OperationType.HAS_ACC, playerName, table, false);
+        return result != null ? (boolean) result : false;
     }
+
     @SuppressWarnings({"unchecked"})
     public HashMap<Stat, Double> getData(String playerName, String tabla) {
-        return (HashMap<Stat, Double>) Objects.requireNonNullElse(operation(OperationType.GET_PLAYER_DATA, playerName, tabla, false), new HashMap<>());
+        Object result = operation(OperationType.GET_PLAYER_DATA, playerName, tabla, false);
+        return result != null ? (HashMap<Stat, Double>) result : new HashMap<>();
     }
+
     public String[] getPlayerNames() {
-        return (String[]) Objects.requireNonNullElse(operation(OperationType.GET_PLAYERS_NAME, null, null, false), new String[0]);
+        Object result = operation(OperationType.GET_PLAYERS_NAME, null, null, false);
+        return result != null ? (String[]) result : new String[0];
     }
+
     @SuppressWarnings({"unchecked"})
     public List<PlayerStats> getPlayersStats(boolean incluirNoFiables, String tabla) {
-        return (List<PlayerStats>) Objects.requireNonNullElse(operation(OperationType.GET_PLAYERS_DATA, null, tabla, incluirNoFiables), new LinkedList<>());
+        Object result = operation(OperationType.GET_PLAYERS_DATA, null, tabla, incluirNoFiables);
+        return result != null ? (List<PlayerStats>) result : new LinkedList<>();
     }
 
     private boolean hasAccount_(String playerName, String tabla) throws SQLException {

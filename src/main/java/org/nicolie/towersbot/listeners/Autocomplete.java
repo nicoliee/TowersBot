@@ -13,14 +13,24 @@ public class Autocomplete extends ListenerAdapter {
     public Autocomplete(SQLDatabaseConnection connection) {
         playerNames = connection.getPlayerNames();
     }
+    
     @Override
     public void onCommandAutoCompleteInteraction(CommandAutoCompleteInteractionEvent e) {
         if (!e.getName().equals("towers") || !e.getFocusedOption().getName().equals("nombre"))
             return;
+
+        // Evitar duplicados verificando si ya se ha respondido
+        if (e.isAcknowledged()) {
+            return; // No hacer nada si ya ha sido reconocido
+        }
+
         List<Command.Choice> options = Stream.of(playerNames)
-                .filter(word -> word.regionMatches(true, 0, e.getFocusedOption().getValue(), 0, e.getFocusedOption().getValue().length())).limit(25) // only display words that start with the user's current input
-                .map(word -> new Command.Choice(word, word)) // map the words to choices
+                .filter(word -> word.regionMatches(true, 0, e.getFocusedOption().getValue(), 0, e.getFocusedOption().getValue().length()))
+                .limit(25) // Solo mostrar las palabras que empiecen con el input del usuario
+                .map(word -> new Command.Choice(word, word)) // Mapear las palabras a opciones
                 .collect(Collectors.toList());
+
+        // Responder a la interacción
         e.replyChoices(options).queue();
     }
 }

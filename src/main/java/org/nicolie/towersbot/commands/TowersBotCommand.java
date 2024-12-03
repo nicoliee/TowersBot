@@ -1,5 +1,9 @@
 package org.nicolie.towersbot.commands;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -7,8 +11,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.nicolie.towersbot.TowersBot;
 import org.nicolie.towersbot.update.AutoUpdate;
+import org.bukkit.command.TabCompleter;
 
-public class TowersBotCommand implements CommandExecutor {
+public class TowersBotCommand implements CommandExecutor, TabCompleter {
     private final TowersBot plugin;
 
     public TowersBotCommand(TowersBot plugin) {
@@ -101,26 +106,31 @@ public class TowersBotCommand implements CommandExecutor {
                     sender.sendMessage("§cUso: /TowersBot add {tabla}");
                     return true;
                 }
-
+            
                 String nuevaTabla = args[1];
                 String tablasAdd = config.getString("DB_TABLES", "");
-
-                if (tablasAdd.contains(nuevaTabla)) {
-                    sender.sendMessage("§cLa tabla ya está configurada.");
-                    return true;
+            
+                // Verificar si la tabla ya está en la lista
+                String[] tablasArray = tablasAdd.split(",");
+                for (String tabla : tablasArray) {
+                    if (tabla.trim().equalsIgnoreCase(nuevaTabla.trim())) {
+                        sender.sendMessage("§cLa tabla ya está configurada.");
+                        return true;
+                    }
                 }
-
+            
                 // Añadir la nueva tabla con coma al final
                 if (!tablasAdd.isEmpty()) {
                     tablasAdd += ",";
                 }
                 tablasAdd += nuevaTabla;
-
+            
                 config.set("DB_TABLES", tablasAdd);
                 plugin.saveConfig();
-
+            
                 sender.sendMessage("§aTabla añadida: " + nuevaTabla);
                 return true;
+            
 
             case "update":
                 String currentVersion = plugin.getDescription().getVersion();
@@ -133,17 +143,34 @@ public class TowersBotCommand implements CommandExecutor {
                 return true;
 
             case "help":
-                sender.sendMessage("§aComandos disponibles:");
-                sender.sendMessage("§e/TowersBot lista §7- Muestra las tablas configuradas.");
-                sender.sendMessage("§e/TowersBot delete {numero} §7- Elimina una tabla de la configuración.");
-                sender.sendMessage("§e/TowersBot add {tabla} §7- Añade una tabla a la configuración.");
-                sender.sendMessage("§e/TowersBot reload §7- Recarga la configuración del plugin.");
-                sender.sendMessage("§e/TowersBot update §7- Verifica actualizaciones del plugin.");
+                sender.sendMessage(" §aComandos disponibles:");
+                sender.sendMessage(" §e/TowersBot add {tabla} §7- Añade una tabla a la configuración.");
+                sender.sendMessage(" §e/TowersBot delete {numero} §7- Elimina una tabla de la configuración.");
+                sender.sendMessage(" §e/TowersBot list §7- Muestra las tablas configuradas.");
+                sender.sendMessage(" §e/TowersBot reload §7- Recarga la configuración del plugin.");
+                sender.sendMessage(" §e/TowersBot update §7- Verifica actualizaciones del plugin.");            
                 return true;
-
             default:
-                sender.sendMessage("§cComando desconocido. Uso: /TowersBot <lista|delete|add|reload|update>");
+                sender.sendMessage("§cComando desconocido. Uso: /TowersBot <add|delete|help|list|reload|update>");
                 return true;
         }
+    }
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 1) {
+            // Lista de opciones posibles
+            List<String> options = Arrays.asList("add", "delete", "help", "list", "reload", "update");
+
+            // Filtrar las opciones que comienzan con el texto ingresado por el usuario
+            String input = args[0].toLowerCase();
+            List<String> filteredOptions = new ArrayList<>();
+            for (String option : options) {
+                if (option.toLowerCase().startsWith(input)) {
+                    filteredOptions.add(option);
+                }
+            }
+            return filteredOptions;
+        }
+        return null;
     }
 }

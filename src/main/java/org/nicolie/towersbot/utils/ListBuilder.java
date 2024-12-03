@@ -8,6 +8,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
+import java.util.AbstractMap;
+
+
 public class ListBuilder {
     public static Map.Entry<String, Integer> buildList(int numElem, int pagina, boolean incluirNoFiables, Stat stat, boolean hasRanks, PlayerStats[] list) {
         StringBuilder sb = new StringBuilder();
@@ -32,7 +35,7 @@ public class ListBuilder {
 
             if (i != numElem - 1) sb.append("\n");
         }
-        return Map.entry(sb.toString(), ++posInList);
+        return new AbstractMap.SimpleEntry<>(sb.toString(), ++posInList);
     }
     public static PlayerStats[] getList(SQLDatabaseConnection connection, Stat stat, boolean incluirNoFiables, String tabla) {
         if (connection.listCache != null && connection.listCache.isInCache(stat, incluirNoFiables, tabla))
