@@ -24,6 +24,7 @@
         <configuration>
           <source>${java.version}</source>
           <target>${java.version}</target>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
         </configuration>
       </plugin>
       <plugin>
@@ -85,10 +86,5 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.2.0</version>
       </dependency>
-      <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20210307</version>
-      </dependency> 
   </dependencies>
 </project>
