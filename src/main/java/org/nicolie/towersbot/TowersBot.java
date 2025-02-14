@@ -17,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class TowersBot extends JavaPlugin {
     public static final String ALL_TABLES = "ALL_TABLES";
@@ -83,11 +84,11 @@ public final class TowersBot extends JavaPlugin {
         List<net.dv8tion.jda.api.interactions.commands.Command.Choice> listOfStatChoices = Arrays.stream(org.nicolie.towersbot.enums.Stat.values())
                 .map(org.nicolie.towersbot.enums.Stat::getText)
                 .map(x -> new net.dv8tion.jda.api.interactions.commands.Command.Choice(x, x))
-                .toList();
+                .collect(Collectors.toList()); 
 
         List<net.dv8tion.jda.api.interactions.commands.Command.Choice> listOfTables = connection.getTables().stream()
                 .map(x -> new net.dv8tion.jda.api.interactions.commands.Command.Choice(x, x))
-                .toList();
+                .collect(Collectors.toList()); 
 
         bot.updateCommands().addCommands(
                 Commands.slash("towers", "Comando The Towers")

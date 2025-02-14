@@ -117,27 +117,32 @@ public class SQLDatabaseConnection {
     private HashMap<Stat, Double> getData_(String playerName, String tabla) throws SQLException {
         HashMap<Stat, Double> toret = new HashMap<>();
         StringBuilder query = new StringBuilder();
+        
         if (!TowersBot.ALL_TABLES.equals(tabla)) {
             query.append("SELECT * FROM ").append(tabla).append(" WHERE PlayerName = ?");
         } else {
-            query.append("SELECT UUID, PlayerName,sum(Kills) Kills,sum(Deaths) Deaths,sum(Anoted_Points) Anoted_Points,sum(Games_Played) Games_Played,sum(Wins) Wins,sum(Blocks_Broken) Blocks_Broken,sum(Blocks_Placed) Blocks_Placed FROM (");
+            query.append("SELECT UUID, PlayerName, sum(Kills) Kills, sum(Deaths) Deaths, ")
+                 .append("sum(Anoted_Points) Anoted_Points, sum(Games_Played) Games_Played, ")
+                 .append("sum(Wins) Wins FROM (");
             for (int i = 0; i < tables.size(); i++) {
                 query.append("SELECT * FROM ").append(tables.get(i));
                 if (i != tables.size() - 1) query.append(" UNION ALL ");
             }
             query.append(") t WHERE PlayerName = ?");
         }
+    
         if (hasAccount(playerName, tabla)) {
             PreparedStatement ps = this.connection.prepareStatement(query.toString());
             ps.setString(1, playerName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                for (int j = 3; j < 10; j++)
+                for (int j = 3; j < 8; j++)  // Antes era hasta 10, ahora hasta 8
                     toret.put(Stat.valueOf(rs.getMetaData().getColumnName(j).toUpperCase()), (double) rs.getInt(j));
             }
         }
         return toret;
     }
+    
 
     private String[] getPlayerNames_() throws SQLException {
         List<String> list = new ArrayList<>();
@@ -153,21 +158,25 @@ public class SQLDatabaseConnection {
     private List<PlayerStats> getPlayersStats_(boolean incluirNoFiables, String tabla) throws SQLException {
         List<PlayerStats> toret = new ArrayList<>();
         StringBuilder query = new StringBuilder();
+        
         if (!TowersBot.ALL_TABLES.equals(tabla)) {
             query.append("SELECT * FROM ").append(tabla);
         } else {
-            query.append("SELECT UUID, PlayerName,sum(Kills) Kills,sum(Deaths) Deaths,sum(Anoted_Points) Anoted_Points,sum(Games_Played) Games_Played,sum(Wins) Wins,sum(Blocks_Broken) Blocks_Broken,sum(Blocks_Placed) Blocks_Placed FROM (");
+            query.append("SELECT UUID, PlayerName, sum(Kills) Kills, sum(Deaths) Deaths, ")
+                 .append("sum(Anoted_Points) Anoted_Points, sum(Games_Played) Games_Played, ")
+                 .append("sum(Wins) Wins FROM (");
             for (int i = 0; i < tables.size(); i++) {
                 query.append("SELECT * FROM ").append(tables.get(i));
                 if (i != tables.size() - 1) query.append(" UNION ALL ");
             }
             query.append(") t GROUP BY PlayerName");
         }
+    
         PreparedStatement ps = this.connection.prepareStatement(query.toString());
         ResultSet rs = ps.executeQuery();
-        if (incluirNoFiables)
+        if (incluirNoFiables) {
             toret.addAll(PlayerStats.listFromResultSet(rs));
-        else {
+        } else {
             while (rs.next()) {
                 PlayerStats p = new PlayerStats(rs);
                 if (p.statsFiables)
@@ -176,6 +185,7 @@ public class SQLDatabaseConnection {
         }
         return toret;
     }
+    
 
     public List<String> getTables() {
         return tables;

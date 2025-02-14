@@ -6,8 +6,6 @@ public enum Stat {
     ANOTED_POINTS("Puntos", "\uD83C\uDF96 ", false, true),
     GAMES_PLAYED("Partidas_jugadas", "\uD83C\uDFDF ", false, true),
     WINS("Wins", "\uD83C\uDFC6 ", false, true),
-    BLOCKS_BROKEN("Bloques_rotos", "\u26CF ", false, true),
-    BLOCKS_PLACED("Bloques_colocados", "\u26CF ", false, true),
     KILL_DEATH_RATIO("K/D", "▶ ", false, false),
     WIN_RATE("Win_rate", "▶ ", true, false),
     POINTS_PER_GAME("Puntos_por_partida", "▶ ", false, false),
