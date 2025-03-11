@@ -1,6 +1,7 @@
 name: TowersBot
 version: '${project.version}'
 main: org.nicolie.towersbot.TowersBot
+depend: [AmazingTowers]
 commands:
   TowersBot:
     description: Comandos para gestionar TowersBot.

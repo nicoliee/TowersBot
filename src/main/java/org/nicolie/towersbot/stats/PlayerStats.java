@@ -21,10 +21,17 @@ public class PlayerStats {
     }
     public PlayerStats(ResultSet rs) throws SQLException {
         this.nombre = rs.getString(2);
-        for (int j = 3; j < 10; j++)
-            stats.put(Stat.valueOf(rs.getMetaData().getColumnName(j).toUpperCase()), (double) rs.getInt(j));
+        for (int j = 3; j < 10; j++) {
+            String columnName = rs.getMetaData().getColumnName(j).toUpperCase();
+            try {
+                Stat stat = Stat.valueOf(columnName);
+                stats.put(stat, (double) rs.getInt(j));
+            } catch (IllegalArgumentException e) {
+            }
+        }
         calcularDatos();
     }
+    
     private void calcularDatos() {
         statsFiables = esFiable();
         if (stats.get(Stat.DEATHS) != 0)

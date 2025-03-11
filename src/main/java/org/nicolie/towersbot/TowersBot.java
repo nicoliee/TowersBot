@@ -13,11 +13,16 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.io.File;
 
 public final class TowersBot extends JavaPlugin {
     public static final String ALL_TABLES = "ALL_TABLES";
@@ -25,60 +30,83 @@ public final class TowersBot extends JavaPlugin {
     private JDA bot;
 
     @Override
-    public void onEnable() {
-        getLogger().info("TowersBot is starting...");
+        public void onEnable() {
         // Registro del comando /TowersBot
         getCommand("TowersBot").setExecutor(new TowersBotCommand(this));
-        // Leer la configuración desde config.yml
-        String token = getConfig().getString("DISCORD_TOKEN");
-        String dbHost = getConfig().getString("DB_HOSTNAME");
-        String dbName = getConfig().getString("DB");
-        String dbUser = getConfig().getString("DB_USER");
-        String dbPassword = getConfig().getString("DB_PASSWORD");
-        String dbTables = getConfig().getString("DB_TABLES");
 
-        // Verificar que todos los valores necesarios estén configurados
+        // Obtener el archivo de configuración de AmazingTowers
+        File gameSettingsFile = new File(Bukkit.getServer().getPluginManager()
+                .getPlugin("AmazingTowers").getDataFolder(), "globalConfig.yml");
+
+        if (!gameSettingsFile.exists()) {
+                getLogger().severe("El archivo globalConfig.yml no existe en AmazingTowers.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+        }
+
+        // Cargar la configuración desde globalConfig.yml
+        FileConfiguration gameConfig = YamlConfiguration.loadConfiguration(gameSettingsFile);
+
+        // Cargar la configuración desde config.yml de TowersBot
+        FileConfiguration mainConfig = getConfig();
+
+        // Leer valores desde config.yml del plugin TowersBot
+        String token = mainConfig.getString("DISCORD_TOKEN");
+        String dbTables = mainConfig.getString("DB_TABLES");
+
+        // Leer valores de la base de datos desde globalConfig.yml
+        String dbHost = gameConfig.getString("options.database.hostname");
+        String dbName = gameConfig.getString("options.database.database");
+        String dbUser = gameConfig.getString("options.database.user");
+        String dbPassword = gameConfig.getString("options.database.password");
+
+        // Verificar que los valores sean válidos
         if (token == null || token.isEmpty()) {
-            getLogger().severe("DISCORD_TOKEN no está configurado en config.yml.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+                getLogger().severe("DISCORD_TOKEN no está configurado en config.yml.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+        }
+
+        if (dbTables == null || dbTables.isEmpty()) {
+                getLogger().severe("DB_TABLES no está configurado en config.yml.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
         }
 
         if (dbHost == null || dbHost.isEmpty() ||
-            dbName == null || dbName.isEmpty() ||
-            dbUser == null || dbUser.isEmpty() ||
-            dbPassword == null || dbPassword.isEmpty() ||
-            dbTables == null || dbTables.isEmpty()) {
-            getLogger().severe("Faltan configuraciones de base de datos en config.yml.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+                dbName == null || dbName.isEmpty() ||
+                dbUser == null || dbUser.isEmpty() ||
+                dbPassword == null || dbPassword.isEmpty()) {
+                getLogger().severe("Faltan configuraciones de base de datos en globalConfig.yml.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
         }
 
-        // Crear la conexión a la base de datos usando los valores leídos del config.yml
+        // Crear la conexión a la base de datos usando los valores leídos
         connection = new SQLDatabaseConnection(dbHost, dbName, dbUser, dbPassword, dbTables);
 
         // Conectar a la base de datos
         if (!connection.Conectar()) {
-            getLogger().severe("No se pudo conectar a la base de datos. Desactivando plugin.");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
+                getLogger().severe("No se pudo conectar a la base de datos. Desactivando plugin.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
         }
 
         // Crear el bot de Discord
         try {
-            bot = JDABuilder.createDefault(token)
-                    .setActivity(Activity.playing("The Towers"))
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT)
-                    .build()
-                    .awaitReady();
+                bot = JDABuilder.createDefault(token)
+                        .setActivity(Activity.playing("The Towers"))
+                        .enableIntents(GatewayIntent.MESSAGE_CONTENT)
+                        .build()
+                        .awaitReady();
 
-            registerCommands(bot);
-            addListeners(bot);
+                registerCommands(bot);
+                addListeners(bot);
         } catch (Exception e) {
-            getLogger().severe("Error al iniciar el bot de Discord: " + e.getMessage());
-            getServer().getPluginManager().disablePlugin(this);
+                getLogger().severe("Error al iniciar el bot de Discord: " + e.getMessage());
+                getServer().getPluginManager().disablePlugin(this);
         }
-    }
+}
 
     private void registerCommands(JDA bot) {
         List<net.dv8tion.jda.api.interactions.commands.Command.Choice> listOfStatChoices = Arrays.stream(org.nicolie.towersbot.enums.Stat.values())
